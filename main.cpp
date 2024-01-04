@@ -9,6 +9,7 @@ double const LATTE_PRICE = 4.0;
 int const MAX_NUMBER_OF_ATTEMPTS = 3;
 double const CAPPUCCINO_PRICE = 3.5;
 int const SERVICE_PIN = 1234;
+double const NOMINAL[] = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0};
 
 double revenue = 0.0;
 double balance = 0.0;
@@ -36,9 +37,13 @@ void makeCoffee(double price);
 
 void depositToBalance();
 
+bool checkNominal(double money);
+
 bool removeFromBalance(double money);
 
 void validatePerson();
+
+void showProgress();
 
 
 int main() {
@@ -89,7 +94,7 @@ void switchMainMenu(int userInput) {
             validatePerson();
             break;
         default:
-            cout << endl << "Неизвестная команда!" << endl;
+            cout << endl << "Неизвестная команда! Введите число в промежутке [1...5]" << endl;
             break;
     }
 }
@@ -131,32 +136,29 @@ void switchServiceMenu(int userInput) {
             showCupsQuantity();
             break;
         case 4:
-            //TODO спросить как пополнять стаканчики
-            break;
-        case 5:
             isServiceMenu = false;
         default:
-            cout << endl << "Неизвестная команда!" << endl;
+            cout << endl << "Неизвестная команда! Введите число в промежутке [1...4]" << endl;
             break;
     }
 }
 
 void showMainMenu() {
-    cout << endl << "Текущий баланс: " << balance << " BYN" << endl;
+    cout << endl << "Главное меню" << endl;
+    cout << "Текущий баланс: " << balance << " BYN" << endl;
     cout << "1. Пополнить баланс" << endl;
-    cout << "2. Эспрессо - " << ESPRESSO_PRICE << "BYN" << endl;
-    cout << "3. Латте - " << LATTE_PRICE << "BYN" << endl;
-    cout << "4. Капучино - " << CAPPUCCINO_PRICE << "BYN" << endl;
-    //или вместо "Сервисное меню" будет пункт "Сервис"?
+    cout << "2. Эспрессо - " << ESPRESSO_PRICE << " BYN" << endl;
+    cout << "3. Латте - " << LATTE_PRICE << " BYN" << endl;
+    cout << "4. Капучино - " << CAPPUCCINO_PRICE << " BYN" << endl;
     cout << "5. Сервисное меню" << endl;
 }
 
 void showServiceMenu() {
-    cout << endl << "1. Просмотреть выручку" << endl;
+    cout << endl << "Сервисное меню" << endl;
+    cout << "1. Просмотреть выручку" << endl;
     cout << "2. Изъять выручку" << endl;
     cout << "3. Просмотреть количество стаканов" << endl;
-    cout << "4. Пополнить стаканчики" << endl;
-    cout << "5. Вернуться в основное меню" << endl;
+    cout << "4. Вернуться в основное меню" << endl;
 }
 
 void showRevenue() {
@@ -172,10 +174,12 @@ void showCupsQuantity() {
 }
 
 void makeCoffee(double price) {
-    // TODO Прогресс приготовления
     if (removeFromBalance(price)) {
         if (cupsQuantity > 0) {
             cupsQuantity -= 1;
+
+            showProgress();
+
             cout << endl << "Ваш ароматный кофе готов!" << endl;
         } else {
             cout << endl << "Недостаточно стаканов!" << endl;
@@ -185,14 +189,39 @@ void makeCoffee(double price) {
     }
 }
 
+void showProgress() {
+    cout << endl << "Ваш кофе готовится!" << endl;
+
+    for (int i = 0; i < 10; ++i) {
+        Sleep(500);
+        cout << "#";
+    }
+    cout << " 100%";
+}
+
 void depositToBalance() {
     double money = 0.0;
 
     cout << endl << "Введите сумму пополнения:" << endl;
     cin >> money;
 
-    balance += money;
-    revenue += money;
+    if (checkNominal(money)) {
+        balance += money;
+        revenue += money;
+        cout << "Ваши " << money << " BYN зачислены на баланс" << endl;
+    } else {
+        cout << "Автомат принимает только белорусские монеты с соответствующим номиналом!" << endl;
+    }
+
+}
+
+bool checkNominal(double money) {
+    for (int i = 0; i < sizeof(NOMINAL); ++i) {
+        if (NOMINAL[i] == money) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool removeFromBalance(double money) {
