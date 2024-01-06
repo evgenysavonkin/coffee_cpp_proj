@@ -1,5 +1,4 @@
 #include <iostream>
-#include <clocale>
 #include <Windows.h>
 
 using namespace std;
@@ -10,12 +9,14 @@ int const MAX_NUMBER_OF_ATTEMPTS = 3;
 double const CAPPUCCINO_PRICE = 3.5;
 int const SERVICE_PIN = 1234;
 double const NOMINAL[] = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0};
+string const MAIN_MENU_ERROR_MSG = "Unknown command! Enter the number in range [1...5]";
+string const SERVICE_MENU_ERROR_MSG = "Unknown command! Enter the number in range [1...4]";
 
-double revenue = 0.0;
-double balance = 0.0;
-int cupsQuantity = 700;
-bool isServiceMenu = false;
-bool isMachineLocked = false;
+double REVENUE = 0.0;
+double BALANCE = 0.0;
+int CUPS_QUANTITY = 700;
+bool IS_SERVICE_MENU = false;
+bool IS_MACHINE_LOCKED = false;
 
 void showMenuAndGetInput();
 
@@ -47,10 +48,7 @@ void showProgress();
 
 
 int main() {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
-    SetConsoleCP(CP_UTF8);
-    SetConsoleOutputCP(CP_UTF8);
-    cout << "Добро пожаловать!" << endl;
+    cout << "Welcome!" << endl;
     showMenuAndGetInput();
     return 0;
 }
@@ -59,11 +57,11 @@ void showMenuAndGetInput() {
     int userInput = 0;
 
     while (true) {
-        if (isMachineLocked) {
-            cout << "Автомат заблокирован!" << endl;
+        if (IS_MACHINE_LOCKED) {
+            cout << "The machine is blocked!" << endl;
             break;
         }
-        if (isServiceMenu) {
+        if (IS_SERVICE_MENU) {
             showServiceMenu();
             cin >> userInput;
             switchServiceMenu(userInput);
@@ -82,19 +80,19 @@ void switchMainMenu(int userInput) {
             depositToBalance();
             break;
         case 2:
-            makeCoffee(ESPRESSO_PRICE);
+            makeCoffee(CAPPUCCINO_PRICE);
             break;
         case 3:
             makeCoffee(LATTE_PRICE);
             break;
         case 4:
-            makeCoffee(CAPPUCCINO_PRICE);
+            makeCoffee(ESPRESSO_PRICE);
             break;
         case 5:
             validatePerson();
             break;
         default:
-            cout << endl << "Неизвестная команда! Введите число в промежутке [1...5]" << endl;
+            cout << endl << MAIN_MENU_ERROR_MSG << endl;
             break;
     }
 }
@@ -102,21 +100,21 @@ void switchMainMenu(int userInput) {
 void validatePerson() {
     int currNumberOfAttempts = 0;
     int pinCode = 0;
-    cout << endl << "Введите PIN-код: " << endl;
+    cout << endl << "Enter a PIN-code: " << endl;
 
     while (true) {
-        if (currNumberOfAttempts >= 1) {
-            cout << endl << "Введите PIN-код ещё раз: " << endl;
+        if (currNumberOfAttempts >= 1 && currNumberOfAttempts != MAX_NUMBER_OF_ATTEMPTS) {
+            cout << endl << "Enter a PIN-code again: " << endl;
         }
         if (currNumberOfAttempts == MAX_NUMBER_OF_ATTEMPTS) {
-            isMachineLocked = true;
+            IS_MACHINE_LOCKED = true;
             return;
         }
 
         cin >> pinCode;
 
         if (pinCode == SERVICE_PIN) {
-            isServiceMenu = true;
+            IS_SERVICE_MENU = true;
             break;
         }
 
@@ -136,61 +134,62 @@ void switchServiceMenu(int userInput) {
             showCupsQuantity();
             break;
         case 4:
-            isServiceMenu = false;
+            IS_SERVICE_MENU = false;
+            break;
         default:
-            cout << endl << "Неизвестная команда! Введите число в промежутке [1...4]" << endl;
+            cout << endl << SERVICE_MENU_ERROR_MSG << endl;
             break;
     }
 }
 
 void showMainMenu() {
-    cout << endl << "Главное меню" << endl;
-    cout << "Текущий баланс: " << balance << " BYN" << endl;
-    cout << "1. Пополнить баланс" << endl;
-    cout << "2. Эспрессо - " << ESPRESSO_PRICE << " BYN" << endl;
-    cout << "3. Латте - " << LATTE_PRICE << " BYN" << endl;
-    cout << "4. Капучино - " << CAPPUCCINO_PRICE << " BYN" << endl;
-    cout << "5. Сервисное меню" << endl;
+    cout << endl << "Main menu" << endl;
+    cout << "Current balance: " << BALANCE << " BYN" << endl;
+    cout << "1. Top up the balance" << endl;
+    cout << "2. Cappuccino - " << CAPPUCCINO_PRICE << " BYN" << endl;
+    cout << "3. Latte - " << LATTE_PRICE << " BYN" << endl;
+    cout << "4. Espresso - " << ESPRESSO_PRICE << " BYN" << endl;
+    cout << "5. Service" << endl;
 }
 
 void showServiceMenu() {
-    cout << endl << "Сервисное меню" << endl;
-    cout << "1. Просмотреть выручку" << endl;
-    cout << "2. Изъять выручку" << endl;
-    cout << "3. Просмотреть количество стаканов" << endl;
-    cout << "4. Вернуться в основное меню" << endl;
+    cout << endl << "Service menu" << endl;
+    cout << "1. Check the revenue" << endl;
+    cout << "2. Take the revenue" << endl;
+    cout << "3. Check the number of cups" << endl;
+    cout << "4. Return to the main menu" << endl;
 }
 
 void showRevenue() {
-    cout << endl << "Выручка составляет " << revenue << " BYN" << endl;
+    cout << endl << "The revenue is " << REVENUE << " BYN" << endl;
 }
 
 void takeRevenue() {
-    revenue = 0;
+    REVENUE = 0;
 }
 
 void showCupsQuantity() {
-    cout << endl << "Количество стаканчиков составляет " << cupsQuantity << endl;
+    cout << endl << "The number of cups is " << CUPS_QUANTITY << endl;
 }
 
 void makeCoffee(double price) {
     if (removeFromBalance(price)) {
-        if (cupsQuantity > 0) {
-            cupsQuantity -= 1;
+        if (CUPS_QUANTITY > 0) {
+            CUPS_QUANTITY -= 1;
 
             showProgress();
 
-            cout << endl << "Ваш ароматный кофе готов!" << endl;
+            cout << endl << "Your flavoured coffee is ready!" << endl;
         } else {
-            cout << endl << "Недостаточно стаканов!" << endl;
+            cout << endl << "Not enough cups!" << endl;
         }
     } else {
-        cout << endl << "Недостаточно средств!" << endl;
+        cout << endl << "Not enough money!" << endl;
     }
 }
 
 void showProgress() {
-    cout << endl << "Ваш кофе готовится!" << endl;
+    cout << endl << "Your coffee is getting ready.." << endl;
 
     for (int i = 0; i < 10; ++i) {
         Sleep(500);
@@ -202,15 +201,15 @@ void showProgress() {
 void depositToBalance() {
     double money = 0.0;
 
-    cout << endl << "Введите сумму пополнения:" << endl;
+    cout << endl << "Enter the amount of the top-up:" << endl;
     cin >> money;
 
     if (checkNominal(money)) {
-        balance += money;
-        revenue += money;
-        cout << "Ваши " << money << " BYN зачислены на баланс" << endl;
+        BALANCE += money;
+        REVENUE += money;
+        cout << money << " BYN have been credited to the balance" << endl;
     } else {
-        cout << "Автомат принимает только белорусские монеты с соответствующим номиналом!" << endl;
+        cout << "The machine accepts only belarusian coins with the appropriate denomination!" << endl;
     }
 
 }
@@ -225,8 +224,8 @@ bool checkNominal(double money) {
 }
 
 bool removeFromBalance(double money) {
-    if (balance >= money) {
-        balance -= money;
+    if (BALANCE >= money) {
+        BALANCE -= money;
         return true;
     } else {
         return false;
