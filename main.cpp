@@ -13,7 +13,7 @@ double const NOMINAL[] = {10, 20, 50, 1, 2};
 
 double currRevenue = 0.0;
 double currBalance = 0.0;
-int currCupsQuantity = 1;
+int currCupsQuantity = 7;
 bool isServiceMenu = false;
 bool isMachineLocked = false;
 
@@ -160,7 +160,7 @@ void topUpNumberOfCups() {
 
     int sumOfCups = currCupsQuantity + numberOfCups;
     if (sumOfCups > MAX_NUMBER_OF_CUPS) {
-        currCupsQuantity = 700;
+        currCupsQuantity = MAX_NUMBER_OF_CUPS;
         return;
     }
 
