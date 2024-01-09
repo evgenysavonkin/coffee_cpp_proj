@@ -3,65 +3,60 @@
 
 using namespace std;
 
-double const ESPRESSO_PRICE = 3.0;
-double const LATTE_PRICE = 4.0;
+double const ESPRESSO_PRICE = 1.50;
+double const LATTE_PRICE = 1.80;
 int const MAX_NUMBER_OF_ATTEMPTS = 3;
-double const CAPPUCCINO_PRICE = 3.5;
+double const CAPPUCCINO_PRICE = 1.80;
 int const SERVICE_PIN = 1234;
-double const NOMINAL[] = {0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0};
-string const MAIN_MENU_ERROR_MSG = "Unknown command! Enter the number in range [1...5]";
-string const SERVICE_MENU_ERROR_MSG = "Unknown command! Enter the number in range [1...4]";
+int const MAX_NUMBER_OF_CUPS = 700;
+double const NOMINAL[] = {10, 20, 50, 1, 2};
 
-double REVENUE = 0.0;
-double BALANCE = 0.0;
-int CUPS_QUANTITY = 700;
-bool IS_SERVICE_MENU = false;
-bool IS_MACHINE_LOCKED = false;
+double currRevenue = 0.0;
+double currBalance = 0.0;
+int currCupsQuantity = 1;
+bool isServiceMenu = false;
+bool isMachineLocked = false;
 
 void showMenuAndGetInput();
-
 void switchMainMenu(int userInput);
-
 void switchServiceMenu(int userInput);
-
 void showMainMenu();
-
 void showServiceMenu();
-
-void showRevenue();
-
 void takeRevenue();
-
-void showCupsQuantity();
-
 void makeCoffee(double price);
-
 void depositToBalance();
-
 bool checkNominal(double money);
-
 bool removeFromBalance(double money);
-
 void validatePerson();
-
 void showProgress();
+void topUpNumberOfCups();
+double convertCoinToDouble(double money);
+bool checkAmountOfCups();
+bool isCoin(double money);
 
 
 int main() {
-    cout << "Welcome!" << endl;
     showMenuAndGetInput();
     return 0;
+}
+
+bool checkAmountOfCups(){
+    return currCupsQuantity == 0;
 }
 
 void showMenuAndGetInput() {
     int userInput = 0;
 
     while (true) {
-        if (IS_MACHINE_LOCKED) {
-            cout << "The machine is blocked!" << endl;
+        if (checkAmountOfCups()){
+            cout << endl << "Not enough cups! You won't get coffee!" << endl;
+        }
+        if (isMachineLocked) {
+            cout << endl << "The PIN-code was entered incorrectly 3 times." << endl << "The machine is blocked!"
+                 << endl;
             break;
         }
-        if (IS_SERVICE_MENU) {
+        if (isServiceMenu) {
             showServiceMenu();
             cin >> userInput;
             switchServiceMenu(userInput);
@@ -70,6 +65,7 @@ void showMenuAndGetInput() {
 
         showMainMenu();
         cin >> userInput;
+
         switchMainMenu(userInput);
     }
 }
@@ -92,7 +88,6 @@ void switchMainMenu(int userInput) {
             validatePerson();
             break;
         default:
-            cout << endl << MAIN_MENU_ERROR_MSG << endl;
             break;
     }
 }
@@ -104,17 +99,19 @@ void validatePerson() {
 
     while (true) {
         if (currNumberOfAttempts >= 1 && currNumberOfAttempts != MAX_NUMBER_OF_ATTEMPTS) {
+            cout << "Incorrect PIN-code!" << endl;
             cout << endl << "Enter a PIN-code again: " << endl;
         }
         if (currNumberOfAttempts == MAX_NUMBER_OF_ATTEMPTS) {
-            IS_MACHINE_LOCKED = true;
+            cout << "Incorrect PIN-code!" << endl;
+            isMachineLocked = true;
             return;
         }
 
         cin >> pinCode;
 
         if (pinCode == SERVICE_PIN) {
-            IS_SERVICE_MENU = true;
+            isServiceMenu = true;
             break;
         }
 
@@ -125,27 +122,22 @@ void validatePerson() {
 void switchServiceMenu(int userInput) {
     switch (userInput) {
         case 1:
-            showRevenue();
-            break;
-        case 2:
             takeRevenue();
             break;
-        case 3:
-            showCupsQuantity();
+        case 2:
+            topUpNumberOfCups();
             break;
-        case 4:
-            IS_SERVICE_MENU = false;
+        case 3:
+            isServiceMenu = false;
             break;
         default:
-            cout << endl << SERVICE_MENU_ERROR_MSG << endl;
             break;
     }
 }
 
 void showMainMenu() {
-    cout << endl << "Main menu" << endl;
-    cout << "Current balance: " << BALANCE << " BYN" << endl;
-    cout << "1. Top up the balance" << endl;
+    cout << endl << "Current balance: " << currBalance << " BYN" << endl;
+    cout << "1. Insert coin" << endl;
     cout << "2. Cappuccino - " << CAPPUCCINO_PRICE << " BYN" << endl;
     cout << "3. Latte - " << LATTE_PRICE << " BYN" << endl;
     cout << "4. Espresso - " << ESPRESSO_PRICE << " BYN" << endl;
@@ -153,29 +145,37 @@ void showMainMenu() {
 }
 
 void showServiceMenu() {
-    cout << endl << "Service menu" << endl;
-    cout << "1. Check the revenue" << endl;
-    cout << "2. Take the revenue" << endl;
-    cout << "3. Check the number of cups" << endl;
-    cout << "4. Return to the main menu" << endl;
+    cout << endl << "Current revenue: " << currRevenue << " BYN" << endl;
+    cout << "Current number of cups: " << currCupsQuantity << endl;
+    cout << "1. Withdraw revenue" << endl;
+    cout << "2. Replenish the number of cups" << endl;
+    cout << "3. Return to the main menu" << endl;
 }
 
-void showRevenue() {
-    cout << endl << "The revenue is " << REVENUE << " BYN" << endl;
+void topUpNumberOfCups() {
+    int numberOfCups = 0;
+
+    cout << endl << "Enter the number of cups you want to replenish the stock with:" << endl;
+    cin >> numberOfCups;
+
+    int sumOfCups = currCupsQuantity + numberOfCups;
+    if (sumOfCups > MAX_NUMBER_OF_CUPS) {
+        currCupsQuantity = 700;
+        return;
+    }
+
+    currCupsQuantity += numberOfCups;
 }
 
 void takeRevenue() {
-    REVENUE = 0;
-}
-
-void showCupsQuantity() {
-    cout << endl << "The number of cups is " << CUPS_QUANTITY << endl;
+    cout << endl << "The revenue was withdrawn. Current revenue: 0 BYN" << endl;
+    currRevenue = 0;
 }
 
 void makeCoffee(double price) {
     if (removeFromBalance(price)) {
-        if (CUPS_QUANTITY > 0) {
-            CUPS_QUANTITY -= 1;
+        if (currCupsQuantity > 0) {
+            currCupsQuantity -= 1;
 
             showProgress();
 
@@ -198,20 +198,40 @@ void showProgress() {
     cout << " 100%";
 }
 
+bool isCoin(double money) {
+    if (money == 10 || money == 20 || money == 50) {
+        return true;
+    }
+
+    return false;
+}
+
+double convertCoinToDouble(double money) {
+    return money * 0.01;
+}
+
 void depositToBalance() {
     double money = 0.0;
 
     cout << endl << "Enter the amount of the top-up:" << endl;
     cin >> money;
 
-    if (checkNominal(money)) {
-        BALANCE += money;
-        REVENUE += money;
-        cout << money << " BYN have been credited to the balance" << endl;
-    } else {
+    if (!checkNominal(money)) {
         cout << "The machine accepts only belarusian coins with the appropriate denomination!" << endl;
+        return;
     }
 
+    if (isCoin(money)) {
+        double currCoin = convertCoinToDouble(money);
+        currBalance += currCoin;
+        currRevenue += currCoin;
+        cout << endl << currCoin << " BYN have been credited to the currBalance" << endl;
+        return;
+    }
+
+    currBalance += money;
+    currRevenue += money;
+    cout << endl << money << " BYN have been credited to the currBalance" << endl;
 }
 
 bool checkNominal(double money) {
@@ -224,8 +244,8 @@ bool checkNominal(double money) {
 }
 
 bool removeFromBalance(double money) {
-    if (BALANCE >= money) {
-        BALANCE -= money;
+    if (currBalance >= money) {
+        currBalance -= money;
         return true;
     } else {
         return false;
